@@ -18,14 +18,18 @@ export default function Page() {
   const maxYear = 2030;
   const yearToPercent = (year) => ((year - minYear) / (maxYear - minYear)) * 100;
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
+    const data: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      data[key] = value.toString();
+    });
     await fetch('/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(formData).toString(),
+      body: new URLSearchParams(data).toString(),
     });
     setSubmitted(true);
   };
