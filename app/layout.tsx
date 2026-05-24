@@ -3,6 +3,11 @@ export const metadata = {
   description: 'A living directory of Asian American cinematographers, from James Wong Howe to Autumn Durald Arkapaw.',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

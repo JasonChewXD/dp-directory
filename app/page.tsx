@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Award, Plus } from 'lucide-react';
 import { dps } from '../data/dps.js';
 
@@ -10,6 +10,14 @@ export default function Page() {
   const [filter, setFilter] = useState('all');
   const [showSubmit, setShowSubmit] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const filtered = filter === 'all' ? dps : dps.filter(d => d.status === filter);
   const sortedByYear = [...filtered].sort((a, b) => a.born - b.born);
@@ -81,28 +89,28 @@ export default function Page() {
         }
       `}</style>
 
-      <header style={{ borderBottom: '1px solid #1a1a1a', padding: '32px 48px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <header style={{ borderBottom: '1px solid #1a1a1a', padding: isMobile ? '24px 20px 18px' : '32px 48px 20px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-end', gap: isMobile ? '20px' : '16px' }}>
         <div>
-          <div className="mono" style={{ fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.6 }}>
+          <div className="mono" style={{ fontSize: isMobile ? '10px' : '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.6 }}>
             An A-Cam Project · The Canon
           </div>
-          <h1 className="serif" style={{ fontSize: '56px', fontWeight: 500, margin: 0, lineHeight: 0.95, letterSpacing: '-0.025em', maxWidth: '900px' }}>
+          <h1 className="serif" style={{ fontSize: isMobile ? '36px' : '56px', fontWeight: 500, margin: 0, lineHeight: 0.95, letterSpacing: '-0.025em', maxWidth: '900px' }}>
             Asian American <em style={{ fontWeight: 400 }}>Cinematographers</em>
           </h1>
         </div>
-        <button onClick={() => { setShowSubmit(true); setSubmitted(false); }} className="mono" style={{ background: '#1a1a1a', color: '#f4f1ea', border: 'none', padding: '14px 22px', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={() => { setShowSubmit(true); setSubmitted(false); }} className="mono" style={{ background: '#1a1a1a', color: '#f4f1ea', border: 'none', padding: '14px 22px', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', display: 'inline-flex', alignSelf: isMobile ? 'flex-start' : 'auto', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}>
           <Plus size={14} /> Nominate
         </button>
       </header>
 
-      <section style={{ padding: '24px 48px', borderBottom: '1px solid rgba(26,26,26,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '4px', border: '1px solid #1a1a1a', padding: '4px' }}>
+      <section style={{ padding: isMobile ? '18px 20px' : '24px 48px', borderBottom: '1px solid rgba(26,26,26,0.15)', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '12px' : '0' }}>
+        <div style={{ display: 'flex', gap: '4px', border: '1px solid #1a1a1a', padding: '4px', flexWrap: 'wrap' }}>
           {[
-            { id: 'all', label: 'All entries' },
+            { id: 'all', label: 'All' },
             { id: 'historical', label: 'Historical' },
             { id: 'active', label: 'Working today' },
           ].map(f => (
-            <button key={f.id} onClick={() => setFilter(f.id)} className="mono filter-btn" style={{ padding: '8px 14px', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', border: 'none', background: filter === f.id ? '#1a1a1a' : 'transparent', color: filter === f.id ? '#f4f1ea' : '#1a1a1a', cursor: 'pointer' }}>
+            <button key={f.id} onClick={() => setFilter(f.id)} className="mono filter-btn" style={{ padding: '8px 14px', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', border: 'none', background: filter === f.id ? '#1a1a1a' : 'transparent', color: filter === f.id ? '#f4f1ea' : '#1a1a1a', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {f.label}
             </button>
           ))}
@@ -113,16 +121,30 @@ export default function Page() {
       </section>
 
       {/* Timeline */}
-      <section style={{ padding: '64px 48px 32px' }}>
-        <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.5, marginBottom: '32px' }}>
+      <section style={{ padding: isMobile ? '40px 20px 24px' : '64px 48px 32px' }}>
+        <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.5, marginBottom: isMobile ? '24px' : '32px' }}>
           § 01 / The Timeline
         </div>
-        {(() => {
-          // Assign each DP to a side (above/below) alternating, then stack into rows
-          // within each side to avoid horizontal label collisions.
-          const MIN_GAP_PCT = 11; // minimum horizontal gap (in % of timeline width) before two labels stack
-          const ROW_HEIGHT = 40; // vertical px between stacked label rows
-          const LABEL_OFFSET = 22; // px from the dot to the nearest label row
+
+        {isMobile ? (
+          // Vertical timeline for mobile: a left-anchored rail with dots and labels stacked top-to-bottom.
+          <div style={{ position: 'relative', paddingLeft: '28px' }}>
+            <div style={{ position: 'absolute', left: '7px', top: '6px', bottom: '6px', width: '1px', background: '#1a1a1a' }}></div>
+            {sortedByYear.map((dp) => (
+              <div key={dp.id} onClick={() => setSelectedDP(dp)} style={{ position: 'relative', padding: '14px 0', cursor: 'pointer' }}>
+                <div style={{ position: 'absolute', left: '-28px', top: '20px', width: dp.highlight ? '14px' : '10px', height: dp.highlight ? '14px' : '10px', borderRadius: '50%', background: dp.highlight ? '#a02020' : '#1a1a1a', border: '3px solid #f4f1ea', transform: dp.highlight ? 'translateX(-2px)' : 'none' }}></div>
+                <div className="serif" style={{ fontSize: '20px', fontWeight: 500, lineHeight: 1.15, letterSpacing: '-0.01em' }}>{dp.name}</div>
+                <div className="mono" style={{ fontSize: '10px', opacity: 0.55, marginTop: '4px', letterSpacing: '0.05em' }}>
+                  {dp.lifespan} · {dp.era.toUpperCase()}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (() => {
+          // Desktop: horizontal timeline with alternating-side labels that stack into rows on collision.
+          const MIN_GAP_PCT = 11;
+          const ROW_HEIGHT = 40;
+          const LABEL_OFFSET = 22;
 
           const items = sortedByYear.map((dp, i) => ({
             dp,
@@ -186,20 +208,20 @@ export default function Page() {
       </section>
 
       {/* Entries grid */}
-      <section style={{ padding: '32px 48px 48px' }}>
-        <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.5, marginBottom: '32px' }}>
+      <section style={{ padding: isMobile ? '24px 20px 32px' : '32px 48px 48px' }}>
+        <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.5, marginBottom: isMobile ? '20px' : '32px' }}>
           § 02 / Entries
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1px', background: 'rgba(26,26,26,0.15)', border: '1px solid rgba(26,26,26,0.15)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1px', background: 'rgba(26,26,26,0.15)', border: '1px solid rgba(26,26,26,0.15)' }}>
           {sortedByYear.map((dp, i) => (
-            <div key={dp.id} className="entry-card fade-up" onClick={() => setSelectedDP(dp)} style={{ background: '#f4f1ea', padding: '28px', animationDelay: `${i * 0.05}s`, opacity: 0 }}>
+            <div key={dp.id} className="entry-card fade-up" onClick={() => setSelectedDP(dp)} style={{ background: '#f4f1ea', padding: isMobile ? '22px' : '28px', animationDelay: `${i * 0.05}s`, opacity: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
                 <div className="mono card-meta" style={{ fontSize: '10px', opacity: 0.5, letterSpacing: '0.1em' }}>
                   № {String(dp.id).padStart(3, '0')} · {dp.era.toUpperCase()}
                 </div>
                 <div className="mono card-meta" style={{ fontSize: '10px', opacity: 0.5 }}>{dp.lifespan}</div>
               </div>
-              <h3 className="serif" style={{ fontSize: '30px', fontWeight: 500, margin: '0 0 4px 0', lineHeight: 1, letterSpacing: '-0.015em' }}>{dp.name}</h3>
+              <h3 className="serif" style={{ fontSize: isMobile ? '26px' : '30px', fontWeight: 500, margin: '0 0 4px 0', lineHeight: 1.05, letterSpacing: '-0.015em' }}>{dp.name}</h3>
               <div className="serif card-meta" style={{ fontSize: '15px', fontStyle: 'italic', opacity: 0.7, marginBottom: '8px' }}>{dp.heritage}</div>
               <div className="mono card-meta" style={{ fontSize: '10px', opacity: 0.5 }}>{dp.origin}</div>
               <div className="card-divider" style={{ height: '1px', background: 'rgba(26,26,26,0.2)', margin: '20px 0' }}></div>
@@ -218,7 +240,7 @@ export default function Page() {
         </div>
       </section>
 
-      <footer style={{ borderTop: '1px solid #1a1a1a', padding: '32px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <footer style={{ borderTop: '1px solid #1a1a1a', padding: isMobile ? '20px' : '32px 48px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '8px' : '0' }}>
         <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.5 }}>acamcrew.com · The Canon</div>
         <div className="serif" style={{ fontSize: '14px', fontStyle: 'italic', opacity: 0.7 }}>A lineage, not a hierarchy.</div>
       </footer>
@@ -236,16 +258,16 @@ export default function Page() {
 
       {/* Profile modal */}
       {selectedDP && (
-        <div onClick={() => setSelectedDP(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '40px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#f4f1ea', maxWidth: '760px', width: '100%', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
-            <button onClick={() => setSelectedDP(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', zIndex: 2 }}><X size={20} /></button>
-            <div style={{ padding: '56px' }}>
+        <div onClick={() => setSelectedDP(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.88)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 100, padding: isMobile ? '0' : '40px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#f4f1ea', maxWidth: '760px', width: '100%', maxHeight: isMobile ? '94vh' : '90vh', overflowY: 'auto', position: 'relative' }}>
+            <button onClick={() => setSelectedDP(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', zIndex: 2 }}><X size={20} /></button>
+            <div style={{ padding: isMobile ? '32px 22px' : '56px' }}>
               <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.15em', opacity: 0.5, marginBottom: '16px' }}>№ {String(selectedDP.id).padStart(3, '0')} · {selectedDP.status.toUpperCase()}</div>
-              <h2 className="serif" style={{ fontSize: '52px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 0.95, letterSpacing: '-0.02em' }}>{selectedDP.name}</h2>
-              <p className="serif" style={{ fontSize: '20px', fontStyle: 'italic', opacity: 0.7, margin: '0 0 8px 0' }}>{selectedDP.heritage}</p>
-              <p className="mono" style={{ fontSize: '11px', opacity: 0.5, margin: '0 0 32px 0' }}>{selectedDP.lifespan} · {selectedDP.origin} · {selectedDP.society}</p>
-              <div style={{ height: '1px', background: '#1a1a1a', margin: '32px 0' }}></div>
-              <p className="serif" style={{ fontSize: '17px', lineHeight: 1.55, margin: '0 0 32px 0' }}>{selectedDP.contribution}</p>
+              <h2 className="serif" style={{ fontSize: isMobile ? '34px' : '52px', fontWeight: 500, margin: '0 0 8px 0', lineHeight: 1, letterSpacing: '-0.02em' }}>{selectedDP.name}</h2>
+              <p className="serif" style={{ fontSize: isMobile ? '17px' : '20px', fontStyle: 'italic', opacity: 0.7, margin: '0 0 8px 0' }}>{selectedDP.heritage}</p>
+              <p className="mono" style={{ fontSize: isMobile ? '10px' : '11px', opacity: 0.5, margin: '0 0 24px 0', lineHeight: 1.5 }}>{selectedDP.lifespan} · {selectedDP.origin} · {selectedDP.society}</p>
+              <div style={{ height: '1px', background: '#1a1a1a', margin: isMobile ? '24px 0' : '32px 0' }}></div>
+              <p className="serif" style={{ fontSize: isMobile ? '15px' : '17px', lineHeight: 1.55, margin: '0 0 28px 0' }}>{selectedDP.contribution}</p>
               <div style={{ marginBottom: '28px' }}>
                 <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.5, marginBottom: '10px' }}>Recognition</div>
                 {selectedDP.awards.map((a, i) => (
@@ -267,14 +289,14 @@ export default function Page() {
 
       {/* Submission modal */}
       {showSubmit && (
-        <div onClick={() => setShowSubmit(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '40px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#f4f1ea', maxWidth: '560px', width: '100%', position: 'relative' }}>
-            <button onClick={() => setShowSubmit(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px' }}><X size={20} /></button>
-            <div style={{ padding: '48px' }}>
+        <div onClick={() => setShowSubmit(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.88)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 100, padding: isMobile ? '0' : '40px' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#f4f1ea', maxWidth: '560px', width: '100%', maxHeight: isMobile ? '94vh' : 'none', overflowY: 'auto', position: 'relative' }}>
+            <button onClick={() => setShowSubmit(false)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', zIndex: 2 }}><X size={20} /></button>
+            <div style={{ padding: isMobile ? '32px 22px' : '48px' }}>
               {!submitted ? (
                 <>
                   <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.15em', opacity: 0.5, marginBottom: '12px' }}>§ Contribute</div>
-                  <h2 className="serif" style={{ fontSize: '40px', fontWeight: 500, margin: '0 0 16px 0', lineHeight: 1.05 }}>Nominate a cinematographer</h2>
+                  <h2 className="serif" style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 500, margin: '0 0 16px 0', lineHeight: 1.05 }}>Nominate a cinematographer</h2>
                   <p className="serif" style={{ fontSize: '15px', fontStyle: 'italic', opacity: 0.7, margin: '0 0 32px 0', lineHeight: 1.5 }}>
                     Nominate yourself or a peer. The subject will be contacted to confirm before listing. No one is published without consent.
                   </p>
