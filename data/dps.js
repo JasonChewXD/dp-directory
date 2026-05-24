@@ -45,9 +45,9 @@ export const dps = [
     status: 'active',
     credits: 80,
     society: 'ASC, ISC',
-    awards: ['ASC President 2009–2012'],
+    awards: ['ASC President 2009–2012 (49th president)'],
     notable: ['American Horror Story', 'Salem', 'The Rookie', 'Glee'],
-    contribution: 'First Asian American president of the ASC (2009–2012). Prolific television cinematographer who also directs.',
+    contribution: 'Served three terms as ASC President (2009–2012), succeeding Daryn Okada — making him the second consecutive Japanese American to lead the society. Prolific television cinematographer who also directs.',
     era: 'Contemporary',
     source: 'Wikipedia, ASC',
   },
@@ -124,13 +124,56 @@ export const dps = [
     highlight: true,
   },
 
+  {
+    id: 7,
+    name: 'Daryn Okada',
+    lifespan: 'b. 1960',
+    born: 1960,
+    died: null,
+    heritage: 'Japanese American',
+    origin: 'Los Angeles, CA',
+    status: 'active',
+    credits: 60,
+    society: 'ASC',
+    awards: [
+      'ASC President 2006–2009 (three one-year terms)',
+      'AMPAS Board of Governors (2015–)',
+      'ASC nominee — In a Child\'s Name (miniseries)',
+    ],
+    notable: ['Mean Girls', 'Cradle 2 the Grave', 'Anna Karenina', 'Halloween H20', 'Baby Mama', 'Just Like Heaven', 'American Reunion'],
+    contribution: 'The first Asian American to serve as president of the American Society of Cinematographers (2006–2009), preceding Michael Goi by one term. Largely self-taught — finished high school early to work on sets. Restarted his career after being temporarily paralyzed in a 1984 on-set helicopter crash.',
+    era: 'Contemporary',
+    source: 'Wikipedia, Variety, MovieMaker Magazine, ASC',
+  },
+  {
+    id: 8,
+    name: 'Patti Lee',
+    lifespan: 'b. 1970s',
+    born: 1970,
+    died: null,
+    heritage: 'Chinese American',
+    origin: 'Los Angeles, CA',
+    status: 'active',
+    credits: 25,
+    society: 'ASC',
+    awards: [
+      'First woman ever nominated for the Primetime Emmy for Outstanding Cinematography for a Multi-Camera Series (Superior Donuts, 2018)',
+      'Emmy nominee — Bob Hearts Abishola, Call Me Kat, Superior Donuts',
+      'ICG Emerging Cinematographers ASC Mentor Award',
+    ],
+    notable: ['Superior Donuts', 'Bob Hearts Abishola', 'Call Me Kat', 'The Bernie Mac Show', 'A Small Act (producer)'],
+    contribution: 'Invited into the ASC in 2018 — widely credited as the first Asian American woman to be welcomed as an active member. Defined the contemporary look of multi-camera comedy on US television. Began as a set lighting tech and gaffer before her DP break on The Bernie Mac Show. Also produced A Small Act, the Emmy-nominated Sundance/HBO documentary named one of Roger Ebert\'s Best Documentaries of 2010.',
+    era: 'Contemporary',
+    source: 'ASC, Patti Lee official site, Emmys.com, ICG Magazine',
+  },
+
   // =================================================================
   // PASTE NEW ENTRIES BELOW THIS LINE
   // =================================================================
   // Template — copy this block and fill it in:
   //
   // {
-  //   id: 7,
+  //   id: 9,
   //   name: '',
   //   lifespan: '',
   //   born: 0000,
