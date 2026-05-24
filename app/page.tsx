@@ -14,8 +14,32 @@ export default function Page() {
   const filtered = filter === 'all' ? dps : dps.filter(d => d.status === filter);
   const sortedByYear = [...filtered].sort((a, b) => a.born - b.born);
 
-  const minYear = 1890;
-  const maxYear = 2030;
+  // Dynamically fit the timeline window to whatever entries are currently visible,
+  // so filtered views zoom in instead of stranding a cluster in the middle.
+  const computeTimelineRange = (entries) => {
+    if (entries.length === 0) {
+      return { minYear: 1890, maxYear: 2030, ticks: [1900, 1920, 1940, 1960, 1980, 2000, 2020] };
+    }
+    const years = entries.map(e => e.born);
+    const minBorn = Math.min(...years);
+    const maxBorn = Math.max(...years);
+    const range = maxBorn - minBorn;
+    const padding = Math.max(range * 0.18, entries.length === 1 ? 20 : 10);
+    const minYear = Math.floor((minBorn - padding) / 10) * 10;
+    const maxYear = Math.ceil((maxBorn + padding) / 10) * 10;
+    const totalRange = maxYear - minYear;
+    let tickStep;
+    if (totalRange <= 30) tickStep = 5;
+    else if (totalRange <= 80) tickStep = 10;
+    else if (totalRange <= 180) tickStep = 20;
+    else tickStep = 40;
+    const ticks = [];
+    for (let y = Math.ceil(minYear / tickStep) * tickStep; y <= maxYear; y += tickStep) {
+      ticks.push(y);
+    }
+    return { minYear, maxYear, ticks };
+  };
+  const { minYear, maxYear, ticks: yearTicks } = computeTimelineRange(filtered);
   const yearToPercent = (year) => ((year - minYear) / (maxYear - minYear)) * 100;
 
   const handleSubmit = async (e: any) => {
@@ -134,7 +158,7 @@ export default function Page() {
             <div style={{ position: 'relative', padding: `${topPad}px 0 ${bottomPad}px 0` }}>
               <div style={{ position: 'absolute', left: 0, right: 0, top: `${topPad}px`, height: '1px', background: '#1a1a1a' }}></div>
               <div style={{ position: 'absolute', left: 0, right: 0, top: `${topPad}px` }}>
-                {[1900, 1920, 1940, 1960, 1980, 2000, 2020].map(year => (
+                {yearTicks.map(year => (
                   <div key={year} style={{ position: 'absolute', left: `${yearToPercent(year)}%`, transform: 'translateX(-50%)' }}>
                     <div style={{ width: '1px', height: '8px', background: '#1a1a1a', marginTop: '-4px' }}></div>
                     <div className="mono" style={{ fontSize: '10px', opacity: 0.4, marginTop: '6px' }}>{year}</div>
