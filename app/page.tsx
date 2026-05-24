@@ -93,30 +93,72 @@ export default function Page() {
         <div className="mono" style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.5, marginBottom: '32px' }}>
           § 01 / The Timeline
         </div>
-        <div style={{ position: 'relative', padding: '60px 0 100px 0' }}>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1px', background: '#1a1a1a' }}></div>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%' }}>
-            {[1900, 1920, 1940, 1960, 1980, 2000, 2020].map(year => (
-              <div key={year} style={{ position: 'absolute', left: `${yearToPercent(year)}%`, transform: 'translateX(-50%)' }}>
-                <div style={{ width: '1px', height: '8px', background: '#1a1a1a', marginTop: '-4px' }}></div>
-                <div className="mono" style={{ fontSize: '10px', opacity: 0.4, marginTop: '6px' }}>{year}</div>
+        {(() => {
+          // Assign each DP to a side (above/below) alternating, then stack into rows
+          // within each side to avoid horizontal label collisions.
+          const MIN_GAP_PCT = 11; // minimum horizontal gap (in % of timeline width) before two labels stack
+          const ROW_HEIGHT = 40; // vertical px between stacked label rows
+          const LABEL_OFFSET = 22; // px from the dot to the nearest label row
+
+          const items = sortedByYear.map((dp, i) => ({
+            dp,
+            x: yearToPercent(dp.born),
+            side: (i % 2 === 0 ? 'above' : 'below') as 'above' | 'below',
+          }));
+
+          const placeRows = (group: typeof items) => {
+            const sorted = [...group].sort((a, b) => a.x - b.x);
+            const rowsLastX: number[] = [];
+            return sorted.map(item => {
+              let row = rowsLastX.findIndex(lastX => item.x - lastX >= MIN_GAP_PCT);
+              if (row === -1) {
+                rowsLastX.push(item.x);
+                row = rowsLastX.length - 1;
+              } else {
+                rowsLastX[row] = item.x;
+              }
+              return { ...item, row };
+            });
+          };
+
+          const above = placeRows(items.filter(it => it.side === 'above'));
+          const below = placeRows(items.filter(it => it.side === 'below'));
+          const placed = [...above, ...below];
+
+          const aboveRows = above.reduce((m, it) => Math.max(m, it.row + 1), 1);
+          const belowRows = below.reduce((m, it) => Math.max(m, it.row + 1), 1);
+          const topPad = LABEL_OFFSET + aboveRows * ROW_HEIGHT + 20;
+          const bottomPad = LABEL_OFFSET + belowRows * ROW_HEIGHT + 20;
+
+          return (
+            <div style={{ position: 'relative', padding: `${topPad}px 0 ${bottomPad}px 0` }}>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${topPad}px`, height: '1px', background: '#1a1a1a' }}></div>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: `${topPad}px` }}>
+                {[1900, 1920, 1940, 1960, 1980, 2000, 2020].map(year => (
+                  <div key={year} style={{ position: 'absolute', left: `${yearToPercent(year)}%`, transform: 'translateX(-50%)' }}>
+                    <div style={{ width: '1px', height: '8px', background: '#1a1a1a', marginTop: '-4px' }}></div>
+                    <div className="mono" style={{ fontSize: '10px', opacity: 0.4, marginTop: '6px' }}>{year}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {sortedByYear.map((dp, i) => {
-            const x = yearToPercent(dp.born);
-            const above = i % 2 === 0;
-            return (
-              <div key={dp.id} onClick={() => setSelectedDP(dp)} onMouseEnter={() => setHoveredYear(dp.id)} onMouseLeave={() => setHoveredYear(null)} style={{ position: 'absolute', left: `${x}%`, top: '50%', transform: 'translate(-50%, -50%)', cursor: 'pointer', zIndex: 5 }}>
-                <div style={{ width: dp.highlight ? '14px' : '10px', height: dp.highlight ? '14px' : '10px', borderRadius: '50%', background: dp.highlight ? '#a02020' : '#1a1a1a', border: '3px solid #f4f1ea', boxShadow: hoveredYear === dp.id ? '0 0 0 6px rgba(26,26,26,0.15)' : 'none', transition: 'box-shadow 0.2s ease' }}></div>
-                <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', [above ? 'bottom' : 'top']: '24px', whiteSpace: 'nowrap', textAlign: 'center', pointerEvents: 'none' }}>
-                  <div className="serif" style={{ fontSize: '15px', fontWeight: 500, lineHeight: 1.1 }}>{dp.name}</div>
-                  <div className="mono" style={{ fontSize: '9px', opacity: 0.5, marginTop: '2px' }}>{dp.lifespan}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              {placed.map(({ dp, x, side, row }) => {
+                const labelOffset = LABEL_OFFSET + row * ROW_HEIGHT;
+                return (
+                  <div key={dp.id} onClick={() => setSelectedDP(dp)} onMouseEnter={() => setHoveredYear(dp.id)} onMouseLeave={() => setHoveredYear(null)} style={{ position: 'absolute', left: `${x}%`, top: `${topPad}px`, transform: 'translate(-50%, -50%)', cursor: 'pointer', zIndex: 5 }}>
+                    <div style={{ width: dp.highlight ? '14px' : '10px', height: dp.highlight ? '14px' : '10px', borderRadius: '50%', background: dp.highlight ? '#a02020' : '#1a1a1a', border: '3px solid #f4f1ea', boxShadow: hoveredYear === dp.id ? '0 0 0 6px rgba(26,26,26,0.15)' : 'none', transition: 'box-shadow 0.2s ease' }}></div>
+                    {row > 0 && (
+                      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', [side === 'above' ? 'bottom' : 'top']: '12px', width: '1px', height: `${row * ROW_HEIGHT - 4}px`, background: 'rgba(26,26,26,0.25)', pointerEvents: 'none' }}></div>
+                    )}
+                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', [side === 'above' ? 'bottom' : 'top']: `${labelOffset}px`, whiteSpace: 'nowrap', textAlign: 'center', pointerEvents: 'none' }}>
+                      <div className="serif" style={{ fontSize: '15px', fontWeight: 500, lineHeight: 1.1 }}>{dp.name}</div>
+                      <div className="mono" style={{ fontSize: '9px', opacity: 0.5, marginTop: '2px' }}>{dp.lifespan}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </section>
 
       {/* Entries grid */}
